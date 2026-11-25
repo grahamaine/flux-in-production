@@ -1,0 +1,25 @@
+{
+  "episode": "episode-01",
+  "title": "Pilot (working title)",
+  "aspect_ratio": "16:9",
+  "resolution": "hd",
+  "draft": true,
+  "style": "Prestige TV drama, 35mm look, natural light, consistent characters and wardrobe across shots.",
+  "shots": [
+    {
+      "id": "cold-open",
+      "duration": 8,
+      "prompt": "Establishing shot: replace with the opening image of the pilot. Ambient sound only."
+    },
+    {
+      "id": "hero-intro",
+      "duration": 10,
+      "prompt": "Medium shot introducing the lead character. Replace with character description and one line of dialogue in quotes."
+    },
+    {
+      "id": "inciting-incident",
+      "duration": 10,
+      "prompt": "The moment that kicks off the series. Replace with action and sound cues."
+    }
+  ]
+}
