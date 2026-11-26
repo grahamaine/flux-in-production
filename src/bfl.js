@@ -25,7 +25,7 @@ export async function submit(endpoint, body) {
   return json; // { id, polling_url, ... }
 }
 
-export async function poll(pollingUrl, { intervalMs = 3000, timeoutMs = 15 * 60_000 } = {}) {
+export async function poll(pollingUrl, { intervalMs = 3000, timeoutMs = 15 * 60_000, onStatus } = {}) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     const res = await fetch(pollingUrl, { headers: headers() });
@@ -35,7 +35,8 @@ export async function poll(pollingUrl, { intervalMs = 3000, timeoutMs = 15 * 60_
     if (['Error', 'Failed', 'Request Moderated', 'Content Moderated', 'Task not found'].includes(status)) {
       throw new Error(`Task ended with status "${status}": ${JSON.stringify(json)}`);
     }
-    process.stdout.write(`  ${status ?? res.status}...\r`);
+    if (onStatus) onStatus(status ?? `HTTP ${res.status}`);
+    else process.stdout.write(`  ${status ?? res.status}...\r`);
     await new Promise((r) => setTimeout(r, intervalMs));
   }
   throw new Error('Polling timed out');
@@ -50,15 +51,17 @@ export async function download(url, outPath) {
   return outPath;
 }
 
-export async function generate(endpoint, body, outPath) {
+export const hasKey = () => Boolean(KEY);
+
+export async function generate(endpoint, body, outPath, { onStatus } = {}) {
   const task = await submit(endpoint, body);
-  console.log(`Submitted ${task.id}`);
-  const done = await poll(task.polling_url);
+  if (onStatus) onStatus('Submitted'); else console.log(`Submitted ${task.id}`);
+  const done = await poll(task.polling_url, { onStatus });
   const url = done.result?.sample;
   if (!url) throw new Error(`No result.sample in ${JSON.stringify(done)}`);
   await download(url, outPath);
   // Secret-free record of what was asked for and what came back.
   await writeFile(outPath + '.json', JSON.stringify({ endpoint, body, id: task.id, finishedAt: new Date().toISOString() }, null, 2));
-  console.log(`Saved ${outPath}`);
+  if (onStatus) onStatus('Saved'); else console.log(`Saved ${outPath}`);
   return outPath;
 }

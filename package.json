@@ -1,16 +1,22 @@
 {
   "name": "flux-in-production",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "FLUX: In Production (Black Forest Labs x Encode Club) - AI short-film pipeline on FLUX 3",
   "type": "module",
   "scripts": {
+    "studio": "node server/index.js",
     "video": "node scripts/generate-video.js",
     "image": "node scripts/generate-image.js",
-    "shots": "node scripts/render-shotlist.js story/episode-01/shotlist.json",
-    "stitch": "bash scripts/stitch.sh output/episode-01 output/episode-01.mp4"
+    "shots": "node scripts/render-shotlist.js",
+    "stitch": "node scripts/stitch.js"
   },
   "author": "Graham Byagaba (AineGB) - thee AGENCY Consults (UG) Limited",
   "license": "MIT",
-  "engines": { "node": ">=20" },
-  "dependencies": { "dotenv": "^16.4.5" }
+  "engines": {
+    "node": ">=20.11"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.22.3"
+  }
 }
