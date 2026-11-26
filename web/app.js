@@ -38,8 +38,8 @@ async function loadStatus() {
   state.status = await api('/status').catch(() => ({}));
   const s = document.getElementById('status');
   s.replaceChildren(
-    h('div', { class: 'pill' + (state.status.hasKey ? ' ok' : '') }, h('i'), state.status.hasKey ? 'BFL API key loaded' : 'No API key in .env'),
-    h('div', { class: 'pill' + (state.status.ffmpeg ? ' ok' : '') }, h('i'), state.status.ffmpeg ? 'ffmpeg ready' : 'ffmpeg not found'),
+    h('span', { class: 'pill' + (state.status.hasKey ? ' ok' : ''), title: state.status.hasKey ? 'BFL API key loaded from .env' : 'Add BFL_API_KEY to .env and restart' }, h('i'), state.status.hasKey ? 'API key' : 'No API key'),
+    h('span', { class: 'pill' + (state.status.ffmpeg ? ' ok' : ''), title: state.status.ffmpeg ? 'ffmpeg found' : 'Install ffmpeg to stitch episodes' }, h('i'), state.status.ffmpeg ? 'ffmpeg' : 'No ffmpeg'),
   );
 }
 let jobTimer;
@@ -65,27 +65,66 @@ async function pollJobs() {
 // ---------- views ----------
 const views = {
   async overview() {
-    const [bible, eps] = await Promise.all([api('/bible'), api('/episodes')]);
+    const [bible, eps, keys] = await Promise.all([api('/bible'), api('/episodes'), api('/keyframes')]);
     const shots = eps.reduce((n, e) => n + e.shots, 0);
+    const details = await Promise.all(eps.map((e) => api('/episodes/' + e.episode).catch(() => null)));
+    const rendered = details.reduce((n, d) => n + (d ? Object.values(d.renders || {}).filter(Boolean).length : 0), 0);
+    const seconds = details.reduce((n, d) => n + (d ? d.shots.reduce((m, s) => m + (Number(s.duration) || 8), 0) : 0), 0);
+    const end = new Date('2026-12-13T23:59:00'), start = new Date('2026-11-30T00:00:00'), now = new Date();
+    const daysLeft = Math.max(0, Math.ceil((end - now) / 864e5));
+    const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
     const steps = [
       ['Add your BFL API key to .env', state.status.hasKey],
       ['Write the logline and hook', Boolean(bible.logline && bible.hook)],
       ['Add the main characters', bible.characters.length > 0],
-      ['Generate character keyframes', false],
+      ['Generate character keyframes', keys.length > 0],
       ['Plan the pilot shot list', shots >= 3],
-      ['Render draft shots, then stitch the pilot', false],
+      ['Render draft shots', rendered > 0],
+      ['Stitch and review the pilot', details.some((d) => d?.cut)],
     ];
+    const icon = (d) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true');
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); s.append(p); return s; };
+    const quick = [
+      ['#shots', 'Add shot', 'M12 5v14M5 12h14'],
+      ['#bible', 'Edit bible', 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14zM8 7h8M8 11h6'],
+      ['#keyframes', 'Keyframe', 'M3 5h18v14H3zM3 15l5-5 5 5 3-3 5 5'],
+      ['#queue', 'Renders', 'M23 7l-7 5 7 5V7zM1 5h15v14H1z'],
+    ];
+    const recent = state.jobs.slice(0, 5);
     return h('div', { class: 'stack' },
-      h('div', {}, h('h1', {}, bible.title || 'FLUX: In Production'),
-        h('p', { class: 'lead' }, 'TV Series with RTL — the series that proves AI-made fiction can win over a mass audience. Programme runs 30 Nov – 13 Dec 2026.')),
-      h('div', { class: 'grid' },
-        h('div', { class: 'card stat' }, h('b', {}, eps.length), h('span', {}, 'episodes')),
-        h('div', { class: 'card stat' }, h('b', {}, shots), h('span', {}, 'shots planned')),
-        h('div', { class: 'card stat' }, h('b', {}, bible.characters.length), h('span', {}, 'characters')),
-        h('div', { class: 'card stat' }, h('b', {}, state.jobs.filter((j) => j.status === 'Done').length), h('span', {}, 'renders this session'))),
-      h('div', { class: 'card' }, h('h2', {}, 'Production checklist'),
-        h('ol', { class: 'steps' }, steps.map(([t, done]) => h('li', { class: done ? 'done' : null }, t)))),
-      bible.logline ? h('div', { class: 'card' }, h('h2', {}, 'Logline'), h('p', {}, bible.logline)) : null,
+      h('div', { class: 'head rise' },
+        h('div', {}, h('p', { class: 'eyebrow' }, 'Black Forest Labs × Encode Club · RTL track'),
+          h('h1', {}, bible.title ? bible.title : 'Your series, ', bible.title ? null : h('em', {}, 'in production.')),
+          h('p', { class: 'lead' }, 'The series that proves AI-made fiction can win over a mass audience.'))),
+      h('div', { class: 'cols' },
+        h('div', { class: 'stack' },
+          h('section', { class: 'hero rise' },
+            h('div', { class: 'row spread', style: 'align-items:flex-start' },
+              h('div', {}, h('p', { class: 'label' }, 'Runtime planned'),
+                h('p', { class: 'big' }, `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`, h('small', {}, ` · ${shots} shots`))),
+              h('div', { style: 'text-align:right' }, h('p', { class: 'label' }, 'Days left'), h('p', { class: 'big' }, daysLeft))),
+            h('div', { class: 'chips' }, eps.length ? eps.map((e, i) => h('span', { class: 'chip' }, e.title,
+              h('span', {}, `${details[i] ? Object.values(details[i].renders || {}).filter(Boolean).length : 0}/${e.shots} rendered`))) : h('span', { class: 'chip' }, 'No episodes yet')),
+            h('div', { class: 'meter', title: 'Programme timeline, 30 Nov – 13 Dec' }, h('i', { style: `width:${progress}%` })),
+            h('div', { class: 'foot' }, h('span', {}, 'Programme 30 Nov – 13 Dec 2026'), h('span', {}, `${rendered} ${rendered === 1 ? "clip" : "clips"} rendered · ${keys.length} ${keys.length === 1 ? "keyframe" : "keyframes"}`))),
+          h('div', { class: 'quick rise' }, quick.map(([href, label, d]) => h('a', { href }, h('span', { class: 'ic' }, icon(d)), label))),
+          h('section', { class: 'tinted' },
+            h('div', { class: 'titled' }, h('span', { class: 'ic' }, icon('M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z')), h('h2', {}, 'Logline')),
+            bible.logline ? h('p', { style: 'margin:0' }, bible.logline)
+              : h('p', { class: 'muted' }, 'No logline yet. ', h('a', { href: '#bible' }, 'Write it in the series bible.'))),
+        ),
+        h('div', { class: 'stack' },
+          h('section', { class: 'card' },
+            h('div', { class: 'titled' }, h('span', { class: 'ic' }, icon('M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11')),
+              h('h2', {}, 'Production checklist')),
+            h('ul', { class: 'steps' }, steps.map(([t, done]) => h('li', { class: done ? 'done' : null }, h('span', { class: 'tick' }, done ? '✓' : ''), t)))),
+          h('section', { class: 'tinted sky' },
+            h('div', { class: 'titled' }, h('span', { class: 'ic', style: 'background:rgba(14,165,233,.15);color:var(--sky)' }, icon('M23 7l-7 5 7 5V7zM1 5h15v14H1z')),
+              h('h2', {}, 'Recent renders')),
+            recent.length ? recent.map((j) => h('div', { class: 'job' }, h('b', {}, j.label), h('span', { class: 'tag ' + j.status }, j.status)))
+              : h('p', { class: 'muted' }, 'Nothing rendered this session yet.')),
+        ),
+      ),
     );
   },
 
@@ -151,9 +190,9 @@ const views = {
             h('button', { class: 'icon ghost', 'aria-label': 'Move up', disabled: i === 0, onclick: () => move(i, -1) }, '↑'),
             h('button', { class: 'icon ghost', 'aria-label': 'Move down', disabled: i === L.shots.length - 1, onclick: () => move(i, 1) }, '↓'),
             h('button', { class: 'icon ghost', 'aria-label': `Delete ${s.id}`, onclick: () => { if (confirmInline(s.id)) { L.shots.splice(i, 1); draw(); markDirty(); } } }, '✕'))),
-        h('div', { class: 'preview' }, L.renders?.[s.id]
-          ? h('video', { src: `/media/output/${state.ep}/${s.id}.mp4${bust()}`, controls: true, preload: 'metadata' })
-          : 'Not rendered yet'));
+        L.renders?.[s.id]
+          ? h('div', { class: 'preview' }, h('video', { src: `/media/output/${state.ep}/${s.id}.mp4${bust()}`, controls: true, preload: 'metadata' }))
+          : h('div', { class: 'preview empty-prev' }, 'Not rendered yet'));
     }) : [h('div', { class: 'card empty' }, 'No shots yet — add the first one.')]));
     draw();
     const totalSec = L.shots.reduce((n, s) => n + (Number(s.duration) || 8), 0);
@@ -200,7 +239,7 @@ const views = {
         field('Prompt', prompt, 'full'),
         h('div', { class: 'full' }, h('button', { class: 'primary', disabled: !state.status.hasKey, onclick: go }, 'Generate image'))),
       files.length ? h('div', { class: 'thumbs' }, files.map((f) => h('figure', {},
-        h('div', { class: 'preview' }, h('img', { src: `/media/keyframes/${encodeURIComponent(f.name)}${bust()}`, alt: f.name, loading: 'lazy' })),
+        h('div', { class: 'preview empty-prev' }, h('img', { src: `/media/keyframes/${encodeURIComponent(f.name)}${bust()}`, alt: f.name, loading: 'lazy' })),
         h('figcaption', {}, f.name))))
         : h('div', { class: 'card empty' }, 'No keyframes yet.'),
     );
