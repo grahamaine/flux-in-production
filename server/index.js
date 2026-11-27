@@ -16,6 +16,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.static(join(ROOT, 'web')));
 app.use('/media/output', express.static(OUTPUT));
 app.use('/media/keyframes', express.static(KEYFRAMES));
+app.use('/brand', express.static(join(ROOT, 'assets', 'brand')));
 
 const wrap = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
   res.status(e.status || 500).json({ error: e.message });

@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/brand/flux-key-art.jpg" alt="FLUX In Production — RTL TV Series key art" width="100%"></p>
+
 # FLUX: In Production — TV Series with RTL
 
 Our entry to **FLUX: In Production**, the Black Forest Labs × Encode Club AI film programme (30 Nov – 13 Dec 2026), on the **TV Series with RTL** track.
@@ -64,6 +66,7 @@ Result URLs from the BFL API expire after about 10 minutes; files are downloaded
 | `src/project.js` | Bible, shot lists, renders, ffmpeg stitch |
 | `story/` | `series-bible.json` and `episode-XX/shotlist.json` |
 | `briefs/` | Track brief and rules checklist |
+| `assets/brand/` | Key art, FLUX wordmark, thee AGENCY logo, app icon and favicons |
 | `assets/keyframes/` | Generated stills |
 | `output/` | Renders (git-ignored) |
 | `.claude/skills/` | Official BFL prompting and API skills |
@@ -74,4 +77,7 @@ Result URLs from the BFL API expire after about 10 minutes; files are downloaded
 
 ---
 
-Powered and rendered by **thee AGENCY Consults (UG) Limited** — *Innovation Unleashed*
+<p align="center">
+  <sub>Powered and rendered by</sub><br>
+  <img src="assets/brand/thee-agency-logo.jpg" alt="thee AGENCY Consults (UG) Limited — Innovation Unleashed" width="320">
+</p>

@@ -92,8 +92,11 @@ const views = {
     ];
     const recent = state.jobs.slice(0, 5);
     return h('div', { class: 'stack' },
-      h('div', { class: 'head rise' },
-        h('div', {}, h('p', { class: 'eyebrow' }, 'Black Forest Labs × Encode Club · RTL track'),
+      h('figure', { class: 'keyart rise', style: 'margin:0' },
+        h('img', { src: '/brand/flux-key-art.jpg', alt: 'FLUX In Production — RTL TV Series key art: a young golfer from first swing to trophy. From dreams to stardom.', width: 1536, height: 1024 }),
+        ),
+      h('div', { class: 'head' },
+        h('div', {}, h('p', { class: 'eyebrow' }, 'Production dashboard'),
           h('h1', {}, bible.title ? bible.title : 'Your series, ', bible.title ? null : h('em', {}, 'in production.')),
           h('p', { class: 'lead' }, 'The series that proves AI-made fiction can win over a mass audience.'))),
       h('div', { class: 'cols' },

@@ -4,7 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FLUX Studio — In Production</title>
-  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="icon" href="/brand/flux-icon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="/brand/favicon.ico">
+  <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+  <meta name="theme-color" content="#1b1140">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
@@ -14,11 +17,11 @@
 
   <header class="top">
     <div class="bar">
-      <a class="brand" href="#overview">
-        <span class="tile"><img src="/mark.svg" alt="" width="26" height="26"></span>
+      <a class="brand" href="#overview" aria-label="FLUX Studio home">
+        <span class="wordmark"><img src="/brand/flux-wordmark.jpg" alt="FLUX" width="148" height="40"></span>
         <span>
-          <b>FLUX<span>Studio</span></b>
-          <small>In Production · TV Series with RTL</small>
+          <b>Studio</b>
+          <small>In Production · RTL TV Series</small>
         </span>
       </a>
       <nav id="nav" aria-label="Sections">
@@ -34,7 +37,10 @@
 
   <main id="main" tabindex="-1"></main>
 
-  <footer class="credit">Powered &amp; rendered by <b>thee AGENCY Consults (UG) Limited</b> · <i>Innovation Unleashed</i></footer>
+  <footer class="credit">
+    <span>Powered &amp; rendered by</span>
+    <img src="/brand/thee-agency-logo.jpg" alt="thee AGENCY Consults (UG) Limited — Innovation Unleashed" width="264" height="98">
+  </footer>
   <div id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="/app.js"></script>
 </body>
